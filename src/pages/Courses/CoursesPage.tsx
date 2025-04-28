@@ -4,8 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FolderPlus, Search, Edit, Trash2, Users } from 'lucide-react';
+import CourseDialog from '@/components/courses/CourseDialog';
 import { Course } from '@/types';
 import { toast } from 'sonner';
+import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
+import CourseStudentsDialog from '@/components/courses/CourseStudentsDialog';
+
 const CoursesPage = () => {
   const initialCourses: Course[] = [
     { id: '1', name: 'Matemática Avançada', description: 'Cálculo diferencial e integral, álgebra linear', enrolledStudents: 15 },
@@ -14,7 +18,58 @@ const CoursesPage = () => {
     { id: '4', name: 'História Mundial', description: 'Análise dos principais eventos históricos mundiais', enrolledStudents: 18 },
     { id: '5', name: 'Programação em Python', description: 'Fundamentos da programação usando Python', enrolledStudents: 30 },
   ];
+
+  const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const [searchQuery, setSearchQuery] = useState('');
   
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
+  const [studentsDialogOpen, setStudentsDialogOpen] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+
+  const filteredCourses = courses.filter(course => 
+    course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleEditCourse = (course: Course) => {
+    setCurrentCourse(course);
+    setDialogOpen(true);
+  };
+
+  const handleDeleteCourse = (course: Course) => {
+    setCourseToDelete(course);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteCourse = () => {
+    if (courseToDelete) {
+      setCourses(courses.filter(c => c.id !== courseToDelete.id));
+      toast.success(`Curso ${courseToDelete.name} excluído com sucesso!`);
+      setDeleteDialogOpen(false);
+      setCourseToDelete(null);
+    }
+  };
+
+  const handleViewStudents = (course: Course) => {
+    setSelectedCourse(course);
+    setStudentsDialogOpen(true);
+  };
+
+  const handleSaveCourse = (course: Course) => {
+    if (course.id) {
+      setCourses(courses.map(c => c.id === course.id ? course : c));
+      toast.success(`Curso ${course.name} atualizado com sucesso!`);
+    } else {
+      const newCourse = { ...course, id: Date.now().toString(), enrolledStudents: 0 };
+      setCourses([...courses, newCourse]);
+      toast.success(`Curso ${course.name} criado com sucesso!`);
+    }
+    setDialogOpen(false);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex items-center justify-between">
