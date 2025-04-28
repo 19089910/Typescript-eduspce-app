@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { UserPlus, Search, Edit, Trash2, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import StudentDialog from '@/components/students/StudentDialog';
 import { Student } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
@@ -24,6 +25,9 @@ const StudentsPage = () => {
   const [students, setStudents] = useState<Student[]>(initialStudents);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNoEnrollment, setShowNoEnrollment] = useState(false);
+  
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
 
@@ -35,13 +39,41 @@ const StudentsPage = () => {
     return matchesSearch && matchesEnrollmentFilter;
   });
 
+  const handleEditStudent = (student: Student) => {
+    setCurrentStudent(student);
+    setDialogOpen(true);
+  };
+
   const handleDeleteStudent = (student: Student) => {
     setStudentToDelete(student);
     setDeleteDialogOpen(true);
   };
 
+  const confirmDeleteStudent = () => {
+    if (studentToDelete) {
+      setStudents(students.filter(s => s.id !== studentToDelete.id));
+      toast.success(`Aluno ${studentToDelete.name} excluído com sucesso!`);
+      setDeleteDialogOpen(false);
+      setStudentToDelete(null);
+    }
+  };
+
   const handleNewEnrollment = (studentId: string) => {
     toast.info("Funcionalidade de nova matrícula em implementação!");
+  };
+
+  const handleSaveStudent = (student: Student) => {
+    if (student.id) {
+      // Update existing student
+      setStudents(students.map(s => s.id === student.id ? student : s));
+      toast.success(`Aluno ${student.name} atualizado com sucesso!`);
+    } else {
+      // Add new student with a generated ID
+      const newStudent = { ...student, id: Date.now().toString(), enrolledCourses: 0 };
+      setStudents([...students, newStudent]);
+      toast.success(`Aluno ${student.name} criado com sucesso!`);
+    }
+    setDialogOpen(false);
   };
 
   return (
@@ -51,7 +83,7 @@ const StudentsPage = () => {
           <h1 className="text-3xl font-bold tracking-tight">Alunos</h1>
           <p className="text-muted-foreground">Gerencie os alunos da sua instituição</p>
         </div>
-        <Button onClick={() => { }} className="gap-1">
+        <Button onClick={() => { setCurrentStudent(null); setDialogOpen(true); }} className="gap-1">
           <UserPlus className="h-4 w-4" />
           Novo Aluno
         </Button>
@@ -112,7 +144,7 @@ const StudentsPage = () => {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={}>
+                          <Button variant="outline" size="sm" onClick={() => handleEditStudent(student)}>
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Editar</span>
                           </Button>
@@ -141,12 +173,21 @@ const StudentsPage = () => {
         </CardContent>
       </Card>
 
+      {dialogOpen && (
+        <StudentDialog 
+          open={dialogOpen} 
+          onOpenChange={setDialogOpen}
+          student={currentStudent}
+          onSave={handleSaveStudent}
+        />
+      )}
+
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title="Excluir Aluno"
         description={`Tem certeza que deseja excluir ${studentToDelete?.name}? Esta ação não pode ser desfeita.`}
-        onConfirm={}
+        onConfirm={confirmDeleteStudent}
       />
     </div>
   );
