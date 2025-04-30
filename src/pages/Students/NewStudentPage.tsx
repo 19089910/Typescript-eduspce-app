@@ -3,17 +3,22 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { useNavigate } from 'react-router-dom';
 import { StudentForm } from '@/components/students/StudentForm';
-import { Student } from '@/types';
+import { NewStudent } from '@/types';
+import { createStudent } from '@/services/studentService'
 import { toast } from 'sonner';
 
 const NewStudentPage = () => {
   const navigate = useNavigate();
 
-  const handleSubmit = (student: Omit<Student, 'id' | 'enrolledCourses'>) => {
-    // In a real app, this would send a POST request to an API
-    console.log('Creating new student:', student);
-    toast.success(`Aluno ${student.name} criado com sucesso!`);
-    navigate('/students');
+  const handleSubmit = async (student: NewStudent) => {
+    try {
+      await createStudent(student);
+      toast.success(`Aluno ${student.name} criado com sucesso!`);
+      navigate('/students');
+    } catch (error) {
+      toast.error('Erro ao criar aluno. Tente novamente.');
+      console.error(error);
+    }
   };
 
   return (

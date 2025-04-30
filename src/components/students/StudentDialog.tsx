@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Student } from '@/types';
@@ -18,11 +17,13 @@ const StudentDialog: React.FC<StudentDialogProps> = ({
   onSave
 }) => {
   const handleSubmit = (values: Omit<Student, 'id' | 'enrolledCourses'>) => {
-    onSave({
+    const newStudent = {
       ...values,
       id: student?.id || '',
-      enrolledCourses: student?.enrolledCourses || 0
-    });
+      enrolledCourses: student?.enrolledCourses || 0 //futuramente ao criar usuario pode colocar ja curso
+    };
+    onSave(newStudent);
+    onOpenChange(false);  // Fecha o modal após salvar
   };
 
   return (
