@@ -11,7 +11,8 @@ import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import StudentsCourseDialog from '@/components/students/StudentsCourseDialog';
-import { getAllStudents } from '@/services/studentService';
+import { getAllStudents, deleteStudent } from '@/services/studentService';
+import { useDeleteItem } from '@/hooks/use-deleteItem';
 
 const StudentsPage = () => {
   const [students, setStudents] = useState<Student[]>([]);
@@ -20,13 +21,10 @@ const StudentsPage = () => {
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
   const [addCourseDialogOpen, setAddCourseDialogOpen] = useState(false);
   const [studentForCourse, setStudentForCourse] = useState<Student | null>(null);
   const isMobile = useIsMobile();
 
-  useEffect(() => {
     const fetchStudents = async () => {
       try {
         const response = await getAllStudents();
@@ -38,8 +36,19 @@ const StudentsPage = () => {
       }
     };
 
+  useEffect(() => {
     fetchStudents();
   }, []);
+
+  // Hook for managing student exclusions
+  const {
+    itemToDelete: studentToDelete,
+    deleteDialogOpen,
+    isDeleting,
+    handleDeleteClick,
+    confirmDelete: confirmDeleteStudent,
+    setDeleteDialogOpen
+  } = useDeleteItem<Student>(deleteStudent, fetchStudents);
 
   // Filter students based on search and filter criteria
   const filteredStudents = students.filter(student => {
@@ -54,37 +63,28 @@ const StudentsPage = () => {
     setDialogOpen(true);
   };
 
-  const handleDeleteStudent = (student: Student) => {
-    setStudentToDelete(student);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteStudent = () => {
-    if (studentToDelete) {
-      setStudents(students.filter(s => s.id !== studentToDelete.id));
-      toast.success(`Aluno ${studentToDelete.name} excluído com sucesso!`);
-      setDeleteDialogOpen(false);
-      setStudentToDelete(null);
-    }
-  };
-
   const handleNewEnrollment = (student: Student) => {
     setStudentForCourse(student);
     setAddCourseDialogOpen(true);
   };
 
   const handleSaveStudent = (student: Student) => {
-    if (student.id) {
-      // Update existing student
-      setStudents(students.map(s => s.id === student.id ? student : s));
-      toast.success(`Aluno ${student.name} atualizado com sucesso!`);
-    } else {
-      // Add new student with a generated ID
-      const newStudent = { ...student, id: Date.now().toString(), enrolledCourses: 0 };
-      setStudents([...students, newStudent]);
-      toast.success(`Aluno ${student.name} criado com sucesso!`);
+    try {
+      if (student.id) {
+        // Update existing student
+        setStudents(students.map(s => s.id === student.id ? student : s));
+        toast.success(`Aluno ${student.name} atualizado com sucesso!`);
+      } else {
+        // Add new student with a generated ID
+        const newStudent = { ...student, id: Date.now().toString(), enrolledCourses: 0 };
+        setStudents([...students, newStudent]);
+        toast.success(`Aluno ${student.name} criado com sucesso!`);
+      }
+      setDialogOpen(false);
+    } catch (error) {
+      console.error("Erro ao salvar curso:", error);
+      toast.error("Erro ao salvar curso. Tente novamente.");
     }
-    setDialogOpen(false);
   };
 
   
@@ -178,7 +178,12 @@ const StudentsPage = () => {
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Editar</span>
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleDeleteStudent(student)}>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleDeleteClick(student)}
+                            disabled={isDeleting && studentToDelete?.id === student.id}
+                          >
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Excluir</span>
                           </Button>

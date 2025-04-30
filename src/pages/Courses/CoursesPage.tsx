@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,48 +9,54 @@ import { Course } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import CourseStudentsDialog from '@/components/courses/CourseStudentsDialog';
+import { useDeleteItem } from '@/hooks/use-deleteItem';
+import { getCourses, deleteCourse } from '@/services/CourseService';
 
 const CoursesPage = () => {
-  const initialCourses: Course[] = [
-    { id: '1', name: 'Matemática Avançada', description: 'Cálculo diferencial e integral, álgebra linear', enrolledStudents: 15 },
-    { id: '2', name: 'Física Quântica', description: 'Princípios da mecânica quântica e aplicações', enrolledStudents: 8 },
-    { id: '3', name: 'Literatura Brasileira', description: 'Estudo dos principais autores e obras brasileiras', enrolledStudents: 24 },
-    { id: '4', name: 'História Mundial', description: 'Análise dos principais eventos históricos mundiais', enrolledStudents: 18 },
-    { id: '5', name: 'Programação em Python', description: 'Fundamentos da programação usando Python', enrolledStudents: 30 },
-  ];
-
-  const [courses, setCourses] = useState<Course[]>(initialCourses);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [studentsDialogOpen, setStudentsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  
+  // Function to search for courses from the API
+  const fetchCourses = async () => {
+    try {
+      const response = await getCourses();
+      console.log(response);
+      setCourses(response);
+    } catch (error) {
+      toast.error("Erro ao carregar os cursos.");
+      console.error("Erro ao buscar cursos:", error);
+    }
+  };
+
+  // Load courses when assembling the component
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+  
+  // Hook to manage course deletions
+  const { 
+    itemToDelete: courseToDelete, 
+    deleteDialogOpen, 
+    isDeleting, 
+    handleDeleteClick, 
+    confirmDelete: confirmDeleteCourse, 
+    setDeleteDialogOpen 
+  } = useDeleteItem<Course>(deleteCourse, fetchCourses);
 
   const filteredCourses = courses.filter(course => 
-    course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    course.description.toLowerCase().includes(searchQuery.toLowerCase())
+    course.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    course.description?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    !searchQuery
   );
 
   const handleEditCourse = (course: Course) => {
     setCurrentCourse(course);
     setDialogOpen(true);
-  };
-
-  const handleDeleteCourse = (course: Course) => {
-    setCourseToDelete(course);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteCourse = () => {
-    if (courseToDelete) {
-      setCourses(courses.filter(c => c.id !== courseToDelete.id));
-      toast.success(`Curso ${courseToDelete.name} excluído com sucesso!`);
-      setDeleteDialogOpen(false);
-      setCourseToDelete(null);
-    }
   };
 
   const handleViewStudents = (course: Course) => {
@@ -59,15 +65,21 @@ const CoursesPage = () => {
   };
 
   const handleSaveCourse = (course: Course) => {
-    if (course.id) {
-      setCourses(courses.map(c => c.id === course.id ? course : c));
-      toast.success(`Curso ${course.name} atualizado com sucesso!`);
-    } else {
-      const newCourse = { ...course, id: Date.now().toString(), enrolledStudents: 0 };
-      setCourses([...courses, newCourse]);
-      toast.success(`Curso ${course.name} criado com sucesso!`);
+    try {
+      if (course.id) {
+        setCourses(courses.map(c => c.id === course.id ? course : c));
+        toast.success(`Curso ${course.name} atualizado com sucesso!`);
+      } else {
+        const newCourse = { ...course, id: Date.now().toString(), enrolledStudents: 0 };
+        setCourses([...courses, newCourse]);
+        toast.success(`Curso ${course.name} criado com sucesso!`);
+      }
+      setDialogOpen(false);
+      
+    } catch (error) {
+      console.error("Erro ao salvar curso:", error);
+      toast.error("Erro ao salvar curso. Tente novamente.");
     }
-    setDialogOpen(false);
   };
 
   return (
@@ -120,7 +132,7 @@ const CoursesPage = () => {
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Editar</span>
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleDeleteCourse(course)}>
+                          <Button variant="outline" size="sm" onClick={() => handleDeleteClick(course)} disabled={isDeleting}>
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Excluir</span>
                           </Button>
