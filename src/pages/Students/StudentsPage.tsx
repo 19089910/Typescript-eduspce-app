@@ -11,6 +11,7 @@ import { Student } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
+import StudentsCourseDialog from '@/components/students/StudentsCourseDialog';
 
 const StudentsPage = () => {
   // Mock data - would be fetched from API in a real app
@@ -30,6 +31,8 @@ const StudentsPage = () => {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const [addCourseDialogOpen, setAddCourseDialogOpen] = useState(false);
+  const [studentForCourse, setStudentForCourse] = useState<Student | null>(null);
   const isMobile = useIsMobile();
 
   // Filter students based on search and filter criteria
@@ -59,8 +62,9 @@ const StudentsPage = () => {
     }
   };
 
-  const handleNewEnrollment = (studentId: string) => {
-    toast.info("Funcionalidade de nova matrícula em implementação!");
+  const handleNewEnrollment = (student: Student) => {
+    setStudentForCourse(student);
+    setAddCourseDialogOpen(true);
   };
 
   const handleSaveStudent = (student: Student) => {
@@ -75,6 +79,23 @@ const StudentsPage = () => {
       toast.success(`Aluno ${student.name} criado com sucesso!`);
     }
     setDialogOpen(false);
+  };
+
+  
+  const handleAddCourses = (studentId: string, courseIds: string[]) => {
+    setStudents(students.map(student => {
+      if (student.id === studentId) {
+        return {
+          ...student,
+          enrolledCourses: student.enrolledCourses + courseIds.length
+        };
+      }
+      return student;
+    }));
+    
+    const studentName = students.find(s => s.id === studentId)?.name;
+    toast.success(`${courseIds.length} curso(s) adicionado(s) para ${studentName}`);
+    setAddCourseDialogOpen(false);
   };
 
   return (
@@ -159,7 +180,7 @@ const StudentsPage = () => {
                             className={isMobile ? "hidden" : ""} 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => handleNewEnrollment(student.id)}
+                            onClick={() => handleNewEnrollment(student)}
                           >
                             <PlusCircle className="h-4 w-4" />
                             <span className="sr-only">Matricular</span>
@@ -196,6 +217,13 @@ const StudentsPage = () => {
         title="Excluir Aluno"
         description={`Tem certeza que deseja excluir ${studentToDelete?.name}? Esta ação não pode ser desfeita.`}
         onConfirm={confirmDeleteStudent}
+      />
+
+      <StudentsCourseDialog
+        open={addCourseDialogOpen}
+        onOpenChange={setAddCourseDialogOpen}
+        student={studentForCourse}
+        onSave={handleAddCourses}
       />
     </div>
   );
