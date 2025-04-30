@@ -34,8 +34,10 @@ const Sidebar = () => {
             key={item.path}
             to={item.path}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-200 hover:bg-accent/80 my-1",
-              isActive(item.path) ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-accent/60"
+              "flex items-center gap-3 rounded-lg px-3 py-2 transition-all duration-200 my-1",
+              isActive(item.path) 
+                ? "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground" 
+                : "text-foreground hover:bg-blue-100 hover:text-primary"
             )}
           >
             <item.icon className={cn("h-5 w-5", isActive(item.path) ? "text-primary-foreground" : "text-primary")} />
