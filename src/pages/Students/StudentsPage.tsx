@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -12,18 +11,10 @@ import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import StudentsCourseDialog from '@/components/students/StudentsCourseDialog';
+import { getAllStudents } from '@/services/studentService';
 
 const StudentsPage = () => {
-  // Mock data - would be fetched from API in a real app
-  const initialStudents: Student[] = [
-    { id: '1', name: 'Ana Silva', email: 'ana.silva@email.com', birthDate: '1995-05-15', enrolledCourses: 2 },
-    { id: '2', name: 'Bruno Santos', email: 'bruno.santos@email.com', birthDate: '1990-08-22', enrolledCourses: 3 },
-    { id: '3', name: 'Carlos Oliveira', email: 'carlos@email.com', birthDate: '1998-03-10', enrolledCourses: 0 },
-    { id: '4', name: 'Daniela Lima', email: 'dani.lima@email.com', birthDate: '1992-11-27', enrolledCourses: 1 },
-    { id: '5', name: 'Eduardo Costa', email: 'edu.costa@email.com', birthDate: '1997-07-03', enrolledCourses: 0 },
-  ];
-
-  const [students, setStudents] = useState<Student[]>(initialStudents);
+  const [students, setStudents] = useState<Student[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNoEnrollment, setShowNoEnrollment] = useState(false);
   
@@ -34,6 +25,21 @@ const StudentsPage = () => {
   const [addCourseDialogOpen, setAddCourseDialogOpen] = useState(false);
   const [studentForCourse, setStudentForCourse] = useState<Student | null>(null);
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await getAllStudents();
+        console.log(response)
+        setStudents(response);
+      } catch (error) {
+        toast.error("Erro ao carregar os alunos.");
+        console.error("Erro ao buscar alunos:", error);
+      }
+    };
+
+    fetchStudents();
+  }, []);
 
   // Filter students based on search and filter criteria
   const filteredStudents = students.filter(student => {

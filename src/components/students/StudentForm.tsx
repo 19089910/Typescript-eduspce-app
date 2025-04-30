@@ -1,4 +1,3 @@
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -6,6 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { NewStudent } from "@/types";
+import { createStudent, updateStudent } from '@/services/studentService';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -20,8 +20,8 @@ const formSchema = z.object({
 });
 
 interface StudentFormProps {
-  onSubmit: (data: NewStudent) => void;
-  defaultValues?: Partial<NewStudent>;
+  onSubmit: (data: NewStudent & { id?: string }) => void;
+  defaultValues?: Partial<NewStudent & { id?: string }>;
 }
 
 export function StudentForm({ onSubmit, defaultValues }: StudentFormProps) {
@@ -34,9 +34,28 @@ export function StudentForm({ onSubmit, defaultValues }: StudentFormProps) {
     },
   });
 
+  const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
+    const studentData = {
+      ...data,
+      id: defaultValues?.id, // pode ser undefined, o que é OK
+    };
+  
+    try {
+      if (studentData.id) {
+        await updateStudent(studentData.id, studentData);
+      } else {
+        console.log(data)
+        await createStudent(data as NewStudent); // criação (sem `id`)
+      }
+      onSubmit(studentData as NewStudent & { id?: string });
+    } catch (error) {
+      console.error("Erro ao salvar o aluno:", error);
+    }
+  };
+  
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"
