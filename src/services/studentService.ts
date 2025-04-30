@@ -5,7 +5,7 @@ import api from "./api";
 // Create a new student
 export const createStudent = async (student: NewStudent): Promise<Student> => {
   try {
-    const response = await api.post("/student", student);
+    const response = await api.post<Student>("/student", student);
     return response.data;
   } catch (error) {
     console.error("Error creating student:", error);

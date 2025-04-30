@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { NewCourse } from "@/types";
+import { createCourse, updateCourse } from '@/services/CourseService';
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -17,8 +18,8 @@ const formSchema = z.object({
 });
 
 interface CourseFormProps {
-  onSubmit: (data: NewCourse) => void;
-  defaultValues?: Partial<NewCourse>;
+  onSubmit: (data: NewCourse & { id?: string }) => void;
+  defaultValues?: Partial<NewCourse & { id?: string }>;
 }
 
 export function CourseForm({ onSubmit, defaultValues }: CourseFormProps) {
@@ -30,9 +31,29 @@ export function CourseForm({ onSubmit, defaultValues }: CourseFormProps) {
     },
   });
 
+  
+  const handleFormSubmit = async (data: z.infer<typeof formSchema>) => {
+    const courseData = {
+      ...data,
+      id: defaultValues?.id, // pode ser undefined, o que é OK
+    };
+  
+    try {
+      if (courseData.id) {
+        await updateCourse(courseData.id, courseData);
+      } else {
+        console.log(data)
+        await createCourse(data as NewCourse); // criação (sem `id`)
+      }
+      onSubmit(courseData as NewCourse & { id?: string });
+    } catch (error) {
+      console.error("Erro ao salvar o aluno:", error);
+    }
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
         <FormField
           control={form.control}
           name="name"

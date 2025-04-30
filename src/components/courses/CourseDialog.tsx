@@ -17,11 +17,13 @@ const CourseDialog: React.FC<CourseDialogProps> = ({
   onSave
 }) => {
   const handleSubmit = (values: Omit<Course, 'id' | 'enrolledStudents'>) => {
-    onSave({
+    const newCourse = {
       ...values,
       id: course?.id || '',
-      enrolledStudents: course?.enrolledStudents || 0
-    });
+      enrolledStudents: course?.enrolledStudents || 0//futuramente ao criar curso ja pode colocar o usuario
+    };
+    onSave(newCourse);
+    onOpenChange(false);
   };
 
   return (
