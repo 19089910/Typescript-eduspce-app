@@ -3,9 +3,11 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { BookOpen, GraduationCap, Home, Users, BookText } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const Sidebar = () => {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const isActive = (path: string) => location.pathname === path;
 
   const menuItems = [
@@ -16,7 +18,10 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="h-full py-6 glass-card rounded-r-xl flex flex-col min-w-[220px] animate-fade-in">
+    <div className={cn(
+      "h-full py-6 glass-card rounded-r-xl flex flex-col min-w-[220px] animate-fade-in",
+      isMobile ? "rounded-none w-full" : ""
+    )}>
       <div className="px-6 mb-8">
         <h2 className="text-2xl font-bold bg-gradient-to-r from-primary to-blue-400 text-transparent bg-clip-text">
           EduSpace

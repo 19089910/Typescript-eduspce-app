@@ -6,11 +6,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UserPlus, Search, Edit, Trash2, PlusCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import StudentDialog from '@/components/students/StudentDialog';
 import { Student } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const StudentsPage = () => {
   // Mock data - would be fetched from API in a real app
@@ -30,6 +30,7 @@ const StudentsPage = () => {
   const [currentStudent, setCurrentStudent] = useState<Student | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState<Student | null>(null);
+  const isMobile = useIsMobile();
 
   // Filter students based on search and filter criteria
   const filteredStudents = students.filter(student => {
@@ -118,8 +119,8 @@ const StudentsPage = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>E-mail</TableHead>
-                  <TableHead>Data de Nascimento</TableHead>
+                  <TableHead className={isMobile ? "hidden" : ""}>E-mail</TableHead>
+                  <TableHead className={isMobile ? "hidden" : ""}>Data de Nascimento</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -129,12 +130,14 @@ const StudentsPage = () => {
                   filteredStudents.map((student) => (
                     <TableRow key={student.id}>
                       <TableCell className="font-medium">{student.name}</TableCell>
-                      <TableCell>{student.email}</TableCell>
-                      <TableCell>{new Date(student.birthDate).toLocaleDateString()}</TableCell>
+                      <TableCell className={isMobile ? "hidden" : ""}>{student.email}</TableCell>
+                      <TableCell className={isMobile ? "hidden" : ""}>
+                        {new Date(student.birthDate).toLocaleDateString()}
+                        </TableCell>
                       <TableCell>
                         {student.enrolledCourses > 0 ? (
                           <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-                            Matriculado em {student.enrolledCourses} curso{student.enrolledCourses > 1 ? 's' : ''}
+                            {isMobile ? "Matriculado" : `Matriculado em ${student.enrolledCourses} curso${student.enrolledCourses > 1 ? 's' : ''}`}
                           </span>
                         ) : (
                           <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800">
@@ -152,7 +155,12 @@ const StudentsPage = () => {
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Excluir</span>
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleNewEnrollment(student.id)}>
+                          <Button 
+                            className={isMobile ? "hidden" : ""} 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => handleNewEnrollment(student.id)}
+                          >
                             <PlusCircle className="h-4 w-4" />
                             <span className="sr-only">Matricular</span>
                           </Button>
