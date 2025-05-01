@@ -8,21 +8,19 @@ import { Link } from 'react-router-dom';
 import { Enrollment } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
-import { getAllEnrollments } from '@/services/enrollmentService';
+import { getAllEnrollments, deleteEnrollment } from '@/services/enrollmentService';
+import { useDeleteItem } from '@/hooks/use-deleteItem'; // Importe o hook
 
 const EnrollmentsPage = () => {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
-  
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [enrollmentToDelete, setEnrollmentToDelete] = useState<Enrollment | null>(null);
 
   // Function to search for courses from the API
   const fetchEnrollments = async () => {
     try {
       const response = await getAllEnrollments();
-            // Mapear a resposta da API para o formato esperado pelo componente
+            // Map the API response to the format expected by the component
             const formattedEnrollments: Enrollment[] = response.map(item => ({
               id: String(item.id),
               studentId: String(item.studentId),
@@ -38,6 +36,19 @@ const EnrollmentsPage = () => {
     }
   };
 
+  // Hook to manage enrollment deletions
+  const { 
+    itemToDelete: enrollmentToDelete, 
+    deleteDialogOpen, 
+    isDeleting, 
+    handleDeleteClick, 
+    confirmDelete: confirmDeleteEnrollment, 
+    setDeleteDialogOpen 
+  } = useDeleteItem<Enrollment>(
+    deleteEnrollment, 
+    fetchEnrollments
+  );
+
  // Load courses when assembling the component
   useEffect(() => {
     fetchEnrollments();
@@ -48,20 +59,6 @@ const EnrollmentsPage = () => {
     enrollment.studentName.toLowerCase().includes(studentSearchQuery.toLowerCase()) &&
     enrollment.courseName.toLowerCase().includes(courseSearchQuery.toLowerCase())
   );
-
-  const handleDeleteEnrollment = (enrollment: Enrollment) => {
-    setEnrollmentToDelete(enrollment);
-    setDeleteDialogOpen(true);
-  };
-
-  const confirmDeleteEnrollment = () => {
-    if (enrollmentToDelete) {
-      setEnrollments(enrollments.filter(e => e.id !== enrollmentToDelete.id));
-      toast.success(`Matrícula removida com sucesso!`);
-      setDeleteDialogOpen(false);
-      setEnrollmentToDelete(null);
-    }
-  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -119,7 +116,12 @@ const EnrollmentsPage = () => {
                       <TableCell>{enrollment.courseName}</TableCell>
                       <TableCell>{new Date(enrollment.enrollmentDate).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm" onClick={() => handleDeleteEnrollment(enrollment)}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDeleteClick(enrollment)}
+                          disabled={isDeleting}
+                        >
                           <X className="h-4 w-4" />
                           <span className="sr-only">Remover Matrícula</span>
                         </Button>
