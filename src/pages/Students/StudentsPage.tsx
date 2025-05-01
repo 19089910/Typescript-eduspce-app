@@ -28,7 +28,6 @@ const StudentsPage = () => {
     const fetchStudents = async () => {
       try {
         const response = await getAllStudents();
-        console.log(response)
         setStudents(response);
       } catch (error) {
         toast.error("Erro ao carregar os alunos.");

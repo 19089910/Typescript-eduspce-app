@@ -42,7 +42,6 @@ export function CourseForm({ onSubmit, defaultValues }: CourseFormProps) {
       if (courseData.id) {
         await updateCourse(courseData.id, courseData);
       } else {
-        console.log(data)
         await createCourse(data as NewCourse); // criação (sem `id`)
       }
       onSubmit(courseData as NewCourse & { id?: string });
