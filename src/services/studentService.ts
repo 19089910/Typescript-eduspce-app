@@ -14,7 +14,7 @@ export const createStudent = async (student: NewStudent): Promise<Student> => {
 };
 
 // Update an existing student
-export const updateStudent = async (id: string, student: Partial<Student>): Promise<Student> => {
+export const updateStudent = async (id: number, student: Partial<Student>): Promise<Student> => {
   try {
     const response = await api.put<Student>(`/student/${id}`, student);
     return response.data;
@@ -25,7 +25,7 @@ export const updateStudent = async (id: string, student: Partial<Student>): Prom
 };
 
 // Get a student by ID
-export const getStudentById = async (id: string): Promise<Student> => {
+export const getStudentById = async (id: number): Promise<Student> => {
   try {
     const response = await api.get<Student>(`/student/${id}`);
     return response.data;

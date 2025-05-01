@@ -63,7 +63,7 @@ const NewEnrollmentPage = () => {
       const successfulEnrollments: string[] = [];
       const failedEnrollments: { courseId: string, reason: string }[] = [];
 
-      const studentName = students.find(s => s.id === selectedStudentId)?.name;
+      const studentName = students.find(s => s.id === Number(selectedStudentId))?.name;
 
       for (const courseId of selectedCourses) {
         const courseName = courses.find(c => c.id === courseId)?.name || courseId;
@@ -140,7 +140,7 @@ const NewEnrollmentPage = () => {
               </SelectTrigger>
               <SelectContent>
                 {students.map(student => (
-                  <SelectItem key={student.id} value={student.id}>{student.name}</SelectItem>
+                  <SelectItem key={student.id} value={String(student.id)}>{student.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

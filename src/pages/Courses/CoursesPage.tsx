@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import CourseStudentsDialog from '@/components/courses/CourseStudentsDialog';
 import { useDeleteItem } from '@/hooks/use-deleteItem';
-import { getCourses, deleteCourse } from '@/services/CourseService';
+import { getCourses, deleteCourse } from '@/services/courseService';
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);

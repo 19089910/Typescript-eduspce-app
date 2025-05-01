@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { CourseForm } from '@/components/courses/CourseForm';
 import { NewCourse } from '@/types';
 import { toast } from 'sonner';
-import { createCourse } from '@/services/CourseService';
+import { createCourse } from '@/services/courseService';
 
 const NewCoursePage = () => {
   const navigate = useNavigate();

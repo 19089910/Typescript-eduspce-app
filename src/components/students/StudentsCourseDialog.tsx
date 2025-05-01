@@ -9,7 +9,7 @@ interface AddCourseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   student: Student | null;
-  onSave: (studentId: string, courseIds: string[]) => void;
+  onSave: (studentId: number, courseIds: string[]) => void;
 }
 
 const AddCourseDialog: React.FC<AddCourseDialogProps> = ({ 

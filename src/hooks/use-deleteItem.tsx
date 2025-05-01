@@ -8,7 +8,7 @@ type DeleteFunction = (id: string) => Promise<void>;
  * @param deleteFunction Função que realiza a exclusão na API
  * @param onSuccess Callback executada após exclusão bem-sucedida
  */
-export function useDeleteItem<T extends { id: string }>(
+export function useDeleteItem<T extends { id: string | number }>(
   deleteFunction: DeleteFunction,
   onSuccess?: () => void
 ) {
@@ -26,7 +26,7 @@ export function useDeleteItem<T extends { id: string }>(
     
     setIsDeleting(true);
     try {
-      await deleteFunction(itemToDelete.id);
+      await deleteFunction(String(itemToDelete.id));
       toast.success("Item excluído com sucesso");
       setDeleteDialogOpen(false);
       

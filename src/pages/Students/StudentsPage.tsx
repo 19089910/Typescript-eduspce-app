@@ -103,7 +103,7 @@ const StudentsPage = () => {
         toast.success(`Aluno ${student.name} atualizado com sucesso!`);
       } else {
         // Add new student with a generated ID
-        const newStudent = { ...student, id: Date.now().toString(), enrolledCourses: 0 };
+        const newStudent = { ...student, enrolledCourses: 0 };
         setStudents([...students, newStudent]);
         toast.success(`Aluno ${student.name} criado com sucesso!`);
       }
@@ -115,7 +115,7 @@ const StudentsPage = () => {
   };
 
   
-  const handleAddCourses = (studentId: string, courseIds: string[]) => {
+  const handleAddCourses = (studentId: number, courseIds: string[]) => {
     setStudents(students.map(student => {
       if (student.id === studentId) {
         return {

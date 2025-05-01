@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { NewCourse } from "@/types";
-import { createCourse, updateCourse } from '@/services/CourseService';
+import { createCourse, updateCourse } from '@/services/courseService';
 
 const formSchema = z.object({
   name: z.string().min(2, {

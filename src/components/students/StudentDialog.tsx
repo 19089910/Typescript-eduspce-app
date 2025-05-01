@@ -19,8 +19,8 @@ const StudentDialog: React.FC<StudentDialogProps> = ({
   const handleSubmit = (values: Omit<Student, 'id' | 'enrolledCourses'>) => {
     const newStudent = {
       ...values,
-      id: student?.id || '',
-      enrolledCourses: student?.enrolledCourses || 0 //futuramente ao criar usuario pode colocar ja curso
+      id: student?.id ?? 0,
+      enrolledCourses: student?.enrolledCourses ?? 0 //futuramente ao criar usuario pode colocar ja curso
     };
     onSave(newStudent);
     onOpenChange(false);  // Fecha o modal após salvar
