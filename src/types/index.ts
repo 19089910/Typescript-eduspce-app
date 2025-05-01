@@ -1,6 +1,6 @@
 
 export interface Student {
-  id: string;
+  id: number;
   name: string;
   email: string;
   birthDate: string;
@@ -14,15 +14,10 @@ export interface Course {
   enrolledStudents: number;
 }
 
-export interface Enrollment {
-  id: string;
+export type CreateEnrollment = {
   studentId: string;
-  studentName: string;
   courseId: string;
-  courseName: string;
-  enrollmentDate: string;
-}
-
+};
 // Interface da resposta da API para Matrícula
 export interface ApiEnrollment {
   id: number;

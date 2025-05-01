@@ -12,6 +12,7 @@ import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import StudentsCourseDialog from '@/components/students/StudentsCourseDialog';
 import { getAllStudents, deleteStudent } from '@/services/studentService';
+import { getAllEnrollments } from '@/services/enrollmentService';
 import { useDeleteItem } from '@/hooks/use-deleteItem';
 
 const StudentsPage = () => {
@@ -25,15 +26,42 @@ const StudentsPage = () => {
   const [studentForCourse, setStudentForCourse] = useState<Student | null>(null);
   const isMobile = useIsMobile();
 
-    const fetchStudents = async () => {
-      try {
-        const response = await getAllStudents();
-        setStudents(response);
-      } catch (error) {
-        toast.error("Erro ao carregar os alunos.");
-        console.error("Erro ao buscar alunos:", error);
-      }
-    };
+  const prepareStudentsWithEnrollmentCount = async (
+    studentsData: Student[]
+  ): Promise<Student[]> => {
+    try {
+      const enrollments = await getAllEnrollments();
+  
+      return studentsData.map(student => {
+        const enrolledCourses = enrollments.filter(
+          enrollment => enrollment.studentId === student.id
+        ).length;
+  
+        return {
+          ...student,
+          enrolledCourses
+        };
+      });
+    } catch (error) {
+      toast.error("Erro ao carregar as matrículas.");
+      console.error("Erro ao buscar matrículas:", error);
+      return studentsData.map(student => ({
+        ...student,
+        enrolledCourses: 0
+      }));
+    }
+  };
+
+  const fetchStudents = async () => {
+    try {
+      const studentsData = await getAllStudents();
+      const studentsWithEnrollments = await prepareStudentsWithEnrollmentCount(studentsData);
+      setStudents(studentsWithEnrollments);
+    } catch (error) {
+      toast.error("Erro ao carregar os alunos.");
+      console.error("Erro ao buscar alunos:", error);
+    }
+  };
 
   useEffect(() => {
     fetchStudents();

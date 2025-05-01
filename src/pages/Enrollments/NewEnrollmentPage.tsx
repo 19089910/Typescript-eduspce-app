@@ -6,8 +6,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { Student, Course, Enrollment } from '@/types';
-import { getCourses  } from '@/services/CourseService';
+import { Student, Course, ApiEnrollment,CreateEnrollment  } from '@/types'; // <-- ajustado aqui
+import { getCourses } from '@/services/courseService';
 import { getAllStudents } from '@/services/studentService';
 import { createEnrollment } from '@/services/enrollmentService';
 import { Loader2 } from 'lucide-react';
@@ -58,61 +58,56 @@ const NewEnrollmentPage = () => {
     }
 
     setIsSubmitting(true);
-    
+
     try {
-      // Create an enrollment for each selected course sequentially
-      // to better handle individual errors
       const successfulEnrollments: string[] = [];
       const failedEnrollments: { courseId: string, reason: string }[] = [];
-      
+
       const studentName = students.find(s => s.id === selectedStudentId)?.name;
-      
+
       for (const courseId of selectedCourses) {
         const courseName = courses.find(c => c.id === courseId)?.name || courseId;
-        
+
         try {
-          const enrollmentData: Partial<Enrollment> = {
+          const enrollmentData: Omit<CreateEnrollment, 'id'> = {
             studentId: selectedStudentId,
             courseId: courseId
           };
-          
-          await createEnrollment(enrollmentData as Enrollment);
+
+          await createEnrollment(enrollmentData);
           successfulEnrollments.push(courseId);
         } catch (error) {
           console.error(`Error enrolling in course ${courseId}:`, error);
-          
-          // Check if it's a duplicate enrollment error
+
           if (error.response?.data?.error === "The student is already enrolled in this course.") {
-            failedEnrollments.push({ 
-              courseId, 
+            failedEnrollments.push({
+              courseId,
               reason: `Aluno já está matriculado em "${courseName}"`
             });
           } else {
-            failedEnrollments.push({ 
-              courseId, 
+            failedEnrollments.push({
+              courseId,
               reason: "Erro desconhecido"
             });
           }
         }
       }
-      
-      // Show appropriate toast messages
+
       if (successfulEnrollments.length > 0) {
         const successCourses = courses
           .filter(course => successfulEnrollments.includes(course.id))
           .map(course => course.name);
-        
+
         toast.success(`Matrícula(s) realizada(s) com sucesso! Aluno: ${studentName}. Cursos: ${successCourses.join(', ')}`);
       }
-      
+
       if (failedEnrollments.length > 0) {
         for (const { courseId, reason } of failedEnrollments) {
           const courseName = courses.find(c => c.id === courseId)?.name || courseId;
           toast.error(`Não foi possível matricular em "${courseName}": ${reason}`);
         }
       }
-      
-      // Only navigate if at least one enrollment was successful
+
       if (successfulEnrollments.length > 0) {
         navigate('/enrollments');
       }

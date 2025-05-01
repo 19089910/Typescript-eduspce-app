@@ -5,31 +5,21 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { FileSignature, Search, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Enrollment } from '@/types';
+import { ApiEnrollment } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import { getAllEnrollments, deleteEnrollment } from '@/services/enrollmentService';
-import { useDeleteItem } from '@/hooks/use-deleteItem'; // Importe o hook
+import { useDeleteItem } from '@/hooks/use-deleteItem';
 
 const EnrollmentsPage = () => {
-  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+  const [enrollments, setEnrollments] = useState<ApiEnrollment[]>([]);
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
 
-  // Function to search for courses from the API
   const fetchEnrollments = async () => {
     try {
       const response = await getAllEnrollments();
-            // Map the API response to the format expected by the component
-            const formattedEnrollments: Enrollment[] = response.map(item => ({
-              id: String(item.id),
-              studentId: String(item.studentId),
-              studentName: item.student?.name || "Nome não disponível",
-              courseId: String(item.courseId),
-              courseName: item.course?.name || "Curso não disponível",
-              enrollmentDate: new Date(item.enrollmentDate).toISOString().split('T')[0]
-            }));
-      setEnrollments(formattedEnrollments);
+      setEnrollments(response);
     } catch (error) {
       toast.error('Erro ao carregar matrículas');
       console.error('Error fetching enrollments:', error);
@@ -44,7 +34,7 @@ const EnrollmentsPage = () => {
     handleDeleteClick, 
     confirmDelete: confirmDeleteEnrollment, 
     setDeleteDialogOpen 
-  } = useDeleteItem<Enrollment>(
+  } = useDeleteItem<ApiEnrollment>(
     deleteEnrollment, 
     fetchEnrollments
   );
@@ -54,10 +44,9 @@ const EnrollmentsPage = () => {
     fetchEnrollments();
   }, []);
 
-  // Filter enrollments based on search criteria
-  const filteredEnrollments = enrollments.filter(enrollment => 
-    enrollment.studentName.toLowerCase().includes(studentSearchQuery.toLowerCase()) &&
-    enrollment.courseName.toLowerCase().includes(courseSearchQuery.toLowerCase())
+  const filteredEnrollments = enrollments.filter(enrollment =>
+    enrollment.student?.name?.toLowerCase().includes(studentSearchQuery.toLowerCase()) &&
+    enrollment.course?.name?.toLowerCase().includes(courseSearchQuery.toLowerCase())
   );
 
   return (
@@ -112,8 +101,8 @@ const EnrollmentsPage = () => {
                 {filteredEnrollments.length > 0 ? (
                   filteredEnrollments.map((enrollment) => (
                     <TableRow key={enrollment.id}>
-                      <TableCell className="font-medium">{enrollment.studentName}</TableCell>
-                      <TableCell>{enrollment.courseName}</TableCell>
+                      <TableCell className="font-medium">{enrollment.student?.name || "Nome não disponível"}</TableCell>
+                      <TableCell>{enrollment.course?.name || "Curso não disponível"}</TableCell>
                       <TableCell>{new Date(enrollment.enrollmentDate).toLocaleDateString()}</TableCell>
                       <TableCell className="text-right">
                         <Button 
@@ -145,7 +134,7 @@ const EnrollmentsPage = () => {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         title="Remover Matrícula"
-        description={`Tem certeza que deseja remover a matrícula de ${enrollmentToDelete?.studentName} no curso ${enrollmentToDelete?.courseName}?`}
+        description={`Tem certeza que deseja remover a matrícula de ${enrollmentToDelete?.student?.name ?? ''} no curso ${enrollmentToDelete?.course?.name ?? ''}?`}
         onConfirm={confirmDeleteEnrollment}
       />
     </div>
