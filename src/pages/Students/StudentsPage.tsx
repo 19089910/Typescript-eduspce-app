@@ -218,7 +218,8 @@ const StudentsPage = () => {
                             className={isMobile ? "hidden" : ""} 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => handleNewEnrollment(student)}
+                            onClick={() => toast.error("Funcionalidade em desenvolvimento.")}
+                            //onClick={() => handleNewEnrollment(student)}
                           >
                             <PlusCircle className="h-4 w-4" />
                             <span className="sr-only">Matricular</span>

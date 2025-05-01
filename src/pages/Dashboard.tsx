@@ -1,22 +1,40 @@
 
-import React from 'react';
+import React,{ useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, BookOpen, GraduationCap, UserPlus, FolderPlus, FileSignature } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { toast } from 'sonner';
+import { getAllEnrollments } from '@/services/enrollmentService';
+import { Stats }from '@/types'
 
 const Dashboard = () => {
-  // Mock data - would be fetched from API in a real app
-  const stats = {
-    students: 324,
-    courses: 18,
-    enrollments: 412
-  };
+  const [stats, setStats] = useState<Stats>({
+    students: 0,
+    courses: 0,
+    enrollments: 0
+  });
 
-  const handleQuickAction = (action: string) => {
-    toast.info(`Funcionalidade "${action}" em implementação!`);
-  };
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const enrollments = await getAllEnrollments();
+        
+        // Calcular estatísticas
+        const uniqueStudents = new Set(enrollments.map(e => e.studentId));
+        const uniqueCourses = new Set(enrollments.map(e => e.courseId));
+        
+        setStats({
+          students: uniqueStudents.size,
+          courses: uniqueCourses.size,
+          enrollments: enrollments.length
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } 
+    };
+
+    fetchStats();
+  }, []);
 
   return (
     <div className="space-y-8 animate-fade-in">

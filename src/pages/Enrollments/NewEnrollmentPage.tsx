@@ -168,7 +168,7 @@ const NewEnrollmentPage = () => {
                     >
                       <span>{course.name}</span>
                       <span className="text-muted-foreground text-xs mt-1">
-                        {course.enrolledStudents} alunos matriculados
+                        {course.enrolledCourses} alunos matriculados
                       </span>
                     </label>
                   </div>

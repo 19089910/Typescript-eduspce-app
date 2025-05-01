@@ -37,6 +37,12 @@ export interface ApiEnrollment {
   enrollmentDate: string;
 }
 
+export interface Stats {
+  students: number;
+  courses: number;
+  enrollments: number;
+}
+
 export type NewStudent = Omit<Student, "id" | "enrolledCourses">;
 export type NewCourse = Omit<Course, "id" | "enrolledStudents">;
 

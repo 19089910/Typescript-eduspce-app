@@ -163,7 +163,12 @@ const CoursesPage = () => {
                             <Trash2 className="h-4 w-4" />
                             <span className="sr-only">Excluir</span>
                           </Button>
-                          <Button variant="outline" size="sm" onClick={() => handleViewStudents(course)}>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => toast.error("Funcionalidade em desenvolvimento.")} 
+                            //onClick={() => handleViewStudents(course)}
+                            >
                             <Users className="h-4 w-4" />
                             <span className="sr-only">Ver Alunos</span>
                           </Button>

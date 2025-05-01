@@ -20,11 +20,11 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
 }) => {
   // Mock data - would be fetched from API in a real app
   const courses: Course[] = [
-    { id: '1', name: 'Matemática Avançada', description: 'Cálculo diferencial e integral, álgebra linear', enrolledStudents: 15 },
-    { id: '2', name: 'Física Quântica', description: 'Princípios da mecânica quântica e aplicações', enrolledStudents: 8 },
-    { id: '3', name: 'Literatura Brasileira', description: 'Estudo dos principais autores e obras brasileiras', enrolledStudents: 24 },
-    { id: '4', name: 'História Mundial', description: 'Análise dos principais eventos históricos mundiais', enrolledStudents: 18 },
-    { id: '5', name: 'Programação em Python', description: 'Fundamentos da programação usando Python', enrolledStudents: 30 },
+    { id: '1', name: 'Matemática Avançada', description: 'Cálculo diferencial e integral, álgebra linear',  enrolledCourses: 15 },
+    { id: '2', name: 'Física Quântica', description: 'Princípios da mecânica quântica e aplicações', enrolledCourses: 8 },
+    { id: '3', name: 'Literatura Brasileira', description: 'Estudo dos principais autores e obras brasileiras', enrolledCourses: 24 },
+    { id: '4', name: 'História Mundial', description: 'Análise dos principais eventos históricos mundiais', enrolledCourses: 18 },
+    { id: '5', name: 'Programação em Python', description: 'Fundamentos da programação usando Python', enrolledCourses: 30 },
   ];
 
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
@@ -72,7 +72,7 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
                 >
                   <span>{course.name}</span>
                   <span className="text-muted-foreground text-xs mt-1">
-                    {course.enrolledStudents} alunos matriculados
+                    {course.enrolledCourses} alunos matriculados
                   </span>
                 </label>
               </div>
