@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,24 +8,40 @@ import { Link } from 'react-router-dom';
 import { Enrollment } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
+import { getAllEnrollments } from '@/services/enrollmentService';
 
 const EnrollmentsPage = () => {
-  // Mock data - would be fetched from API in a real app
-  const initialEnrollments: Enrollment[] = [
-    { id: '1', studentId: '1', studentName: 'Ana Silva', courseId: '1', courseName: 'Matemática Avançada', enrollmentDate: '2023-02-15' },
-    { id: '2', studentId: '1', studentName: 'Ana Silva', courseId: '5', courseName: 'Programação em Python', enrollmentDate: '2023-03-05' },
-    { id: '3', studentId: '2', studentName: 'Bruno Santos', courseId: '2', courseName: 'Física Quântica', enrollmentDate: '2023-02-10' },
-    { id: '4', studentId: '2', studentName: 'Bruno Santos', courseId: '3', courseName: 'Literatura Brasileira', enrollmentDate: '2023-02-22' },
-    { id: '5', studentId: '2', studentName: 'Bruno Santos', courseId: '4', courseName: 'História Mundial', enrollmentDate: '2023-03-15' },
-    { id: '6', studentId: '4', studentName: 'Daniela Lima', courseId: '5', courseName: 'Programação em Python', enrollmentDate: '2023-03-18' },
-  ];
-
-  const [enrollments, setEnrollments] = useState<Enrollment[]>(initialEnrollments);
+  const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
   
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [enrollmentToDelete, setEnrollmentToDelete] = useState<Enrollment | null>(null);
+
+  // Function to search for courses from the API
+  const fetchEnrollments = async () => {
+    try {
+      const response = await getAllEnrollments();
+            // Mapear a resposta da API para o formato esperado pelo componente
+            const formattedEnrollments: Enrollment[] = response.map(item => ({
+              id: String(item.id),
+              studentId: String(item.studentId),
+              studentName: item.student?.name || "Nome não disponível",
+              courseId: String(item.courseId),
+              courseName: item.course?.name || "Curso não disponível",
+              enrollmentDate: new Date(item.enrollmentDate).toISOString().split('T')[0]
+            }));
+      setEnrollments(formattedEnrollments);
+    } catch (error) {
+      toast.error('Erro ao carregar matrículas');
+      console.error('Error fetching enrollments:', error);
+    }
+  };
+
+ // Load courses when assembling the component
+  useEffect(() => {
+    fetchEnrollments();
+  }, []);
 
   // Filter enrollments based on search criteria
   const filteredEnrollments = enrollments.filter(enrollment => 

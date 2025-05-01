@@ -1,4 +1,4 @@
-import { Enrollment } from "../types";
+import { Enrollment, ApiEnrollment} from "../types";
 import api from "./api";
 
 // Service to interact with the backend for enrollment operations
@@ -6,8 +6,23 @@ import api from "./api";
 // Create a new enrollment
 export const createEnrollment = async (enrollment: Enrollment): Promise<Enrollment> => {
   try {
-    const response = await api.post<Enrollment>("/enrollment", enrollment);
-    return response.data;
+    // Converter para o formato esperado pela API
+    const apiEnrollment = {
+      studentId: Number(enrollment.studentId),
+      courseId: Number(enrollment.courseId)
+    };
+    
+    const response = await api.post<ApiEnrollment>("/enrollment", apiEnrollment);
+    
+    // Converter a resposta de volta para o formato do nosso app
+    return {
+      id: String(response.data.id),
+      studentId: String(response.data.studentId),
+      studentName: response.data.student?.name || "",
+      courseId: String(response.data.courseId),
+      courseName: response.data.course?.name || "",
+      enrollmentDate: new Date(response.data.enrollmentDate).toISOString().split('T')[0]
+    };
   } catch (error) {
     console.error("Error creating enrollment:", error);
     throw error;
@@ -48,9 +63,9 @@ export const getEnrollmentById = async (id: string): Promise<Enrollment> => {
 };
 
 // Get all enrollments
-export const getAllEnrollments = async (): Promise<Enrollment[]> => {
+export const getAllEnrollments = async (): Promise<ApiEnrollment[]> => {
   try {
-    const response = await api.get<Enrollment[]>("/enrollment");
+    const response = await api.get<ApiEnrollment[]>("/enrollment");
     return response.data;
   } catch (error) {
     console.error("Error fetching all enrollments:", error);
