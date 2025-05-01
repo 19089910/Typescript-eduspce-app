@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -7,30 +6,37 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { Student, Course } from '@/types';
+import { Student, Course, Enrollment } from '@/types';
+import { getCourses  } from '@/services/CourseService';
+import { getAllStudents } from '@/services/studentService';
+import { createEnrollment } from '@/services/enrollmentService';
+import { Loader2 } from 'lucide-react';
 
 const NewEnrollmentPage = () => {
   const navigate = useNavigate();
-
-  // Mock data - would be fetched from API in a real app
-  const students: Student[] = [
-    { id: '1', name: 'Ana Silva', email: 'ana.silva@email.com', birthDate: '1995-05-15', enrolledCourses: 2 },
-    { id: '2', name: 'Bruno Santos', email: 'bruno.santos@email.com', birthDate: '1990-08-22', enrolledCourses: 3 },
-    { id: '3', name: 'Carlos Oliveira', email: 'carlos@email.com', birthDate: '1998-03-10', enrolledCourses: 0 },
-    { id: '4', name: 'Daniela Lima', email: 'dani.lima@email.com', birthDate: '1992-11-27', enrolledCourses: 1 },
-    { id: '5', name: 'Eduardo Costa', email: 'edu.costa@email.com', birthDate: '1997-07-03', enrolledCourses: 0 },
-  ];
-
-  const courses: Course[] = [
-    { id: '1', name: 'Matemática Avançada', description: 'Cálculo diferencial e integral, álgebra linear', enrolledStudents: 15 },
-    { id: '2', name: 'Física Quântica', description: 'Princípios da mecânica quântica e aplicações', enrolledStudents: 8 },
-    { id: '3', name: 'Literatura Brasileira', description: 'Estudo dos principais autores e obras brasileiras', enrolledStudents: 24 },
-    { id: '4', name: 'História Mundial', description: 'Análise dos principais eventos históricos mundiais', enrolledStudents: 18 },
-    { id: '5', name: 'Programação em Python', description: 'Fundamentos da programação usando Python', enrolledStudents: 30 },
-  ];
-
+  const [students, setStudents] = useState<Student[]>([]);
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fetch students and courses on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [studentsData, coursesData] = await Promise.all([
+          getAllStudents(),
+          getCourses()
+        ]);
+        setStudents(studentsData);
+        setCourses(coursesData);
+      } catch (error) {
+        toast.error("Erro ao carregar dados. Por favor, tente novamente.");
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleToggleCourse = (courseId: string) => {
     setSelectedCourses(prevSelectedCourses =>
@@ -40,7 +46,7 @@ const NewEnrollmentPage = () => {
     );
   };
 
-  const handleCreateEnrollment = () => {
+  const handleCreateEnrollment = async () => {
     if (!selectedStudentId) {
       toast.error("Por favor, selecione um aluno.");
       return;
@@ -51,13 +57,71 @@ const NewEnrollmentPage = () => {
       return;
     }
 
-    const studentName = students.find(s => s.id === selectedStudentId)?.name;
-    const selectedCoursesNames = courses
-      .filter(course => selectedCourses.includes(course.id))
-      .map(course => course.name);
-
-    toast.success(`Matrícula realizada com sucesso! Aluno: ${studentName}. Cursos: ${selectedCoursesNames.join(', ')}`);
-    navigate('/enrollments');
+    setIsSubmitting(true);
+    
+    try {
+      // Create an enrollment for each selected course sequentially
+      // to better handle individual errors
+      const successfulEnrollments: string[] = [];
+      const failedEnrollments: { courseId: string, reason: string }[] = [];
+      
+      const studentName = students.find(s => s.id === selectedStudentId)?.name;
+      
+      for (const courseId of selectedCourses) {
+        const courseName = courses.find(c => c.id === courseId)?.name || courseId;
+        
+        try {
+          const enrollmentData: Partial<Enrollment> = {
+            studentId: selectedStudentId,
+            courseId: courseId
+          };
+          
+          await createEnrollment(enrollmentData as Enrollment);
+          successfulEnrollments.push(courseId);
+        } catch (error) {
+          console.error(`Error enrolling in course ${courseId}:`, error);
+          
+          // Check if it's a duplicate enrollment error
+          if (error.response?.data?.error === "The student is already enrolled in this course.") {
+            failedEnrollments.push({ 
+              courseId, 
+              reason: `Aluno já está matriculado em "${courseName}"`
+            });
+          } else {
+            failedEnrollments.push({ 
+              courseId, 
+              reason: "Erro desconhecido"
+            });
+          }
+        }
+      }
+      
+      // Show appropriate toast messages
+      if (successfulEnrollments.length > 0) {
+        const successCourses = courses
+          .filter(course => successfulEnrollments.includes(course.id))
+          .map(course => course.name);
+        
+        toast.success(`Matrícula(s) realizada(s) com sucesso! Aluno: ${studentName}. Cursos: ${successCourses.join(', ')}`);
+      }
+      
+      if (failedEnrollments.length > 0) {
+        for (const { courseId, reason } of failedEnrollments) {
+          const courseName = courses.find(c => c.id === courseId)?.name || courseId;
+          toast.error(`Não foi possível matricular em "${courseName}": ${reason}`);
+        }
+      }
+      
+      // Only navigate if at least one enrollment was successful
+      if (successfulEnrollments.length > 0) {
+        navigate('/enrollments');
+      }
+    } catch (error) {
+      toast.error("Erro ao realizar matrícula. Por favor, tente novamente.");
+      console.error("Error creating enrollments:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -89,34 +153,49 @@ const NewEnrollmentPage = () => {
 
           <div className="space-y-4">
             <Label>Selecione os Cursos</Label>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {courses.map(course => (
-                <div
-                  key={course.id}
-                  className="glass-card flex items-center space-x-2 rounded-md p-4"
-                >
-                  <Checkbox
-                    id={`course-${course.id}`}
-                    checked={selectedCourses.includes(course.id)}
-                    onCheckedChange={() => handleToggleCourse(course.id)}
-                  />
-                  <label
-                    htmlFor={`course-${course.id}`}
-                    className="flex flex-col cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            {courses.length === 0 ? (
+              <p className="text-muted-foreground">Nenhum curso disponível.</p>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {courses.map(course => (
+                  <div
+                    key={course.id}
+                    className="glass-card flex items-center space-x-2 rounded-md p-4"
                   >
-                    <span>{course.name}</span>
-                    <span className="text-muted-foreground text-xs mt-1">
-                      {course.enrolledStudents} alunos matriculados
-                    </span>
-                  </label>
-                </div>
-              ))}
-            </div>
+                    <Checkbox
+                      id={`course-${course.id}`}
+                      checked={selectedCourses.includes(course.id)}
+                      onCheckedChange={() => handleToggleCourse(course.id)}
+                    />
+                    <label
+                      htmlFor={`course-${course.id}`}
+                      className="flex flex-col cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      <span>{course.name}</span>
+                      <span className="text-muted-foreground text-xs mt-1">
+                        {course.enrolledStudents} alunos matriculados
+                      </span>
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
-            <Button variant="outline" onClick={() => navigate('/enrollments')}>Cancelar</Button>
-            <Button onClick={handleCreateEnrollment}>Confirmar Matrícula</Button>
+            <Button variant="outline" onClick={() => navigate('/enrollments')} disabled={isSubmitting}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateEnrollment} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                'Confirmar Matrícula'
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>
