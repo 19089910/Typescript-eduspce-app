@@ -11,6 +11,7 @@ import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import CourseStudentsDialog from '@/components/courses/CourseStudentsDialog';
 import { useDeleteItem } from '@/hooks/use-deleteItem';
 import { getCourses, deleteCourse } from '@/services/courseService';
+import { getAllEnrollments } from '@/services/enrollmentService';
 
 const CoursesPage = () => {
   const [courses, setCourses] = useState<Course[]>([]);
@@ -21,11 +22,38 @@ const CoursesPage = () => {
   const [studentsDialogOpen, setStudentsDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   
+
+    const prepareStudentsWithEnrollmentCount = async (
+      CoursesData: Course[]
+    ): Promise<Course[]> => {
+      try {
+        const enrollments = await getAllEnrollments();
+    
+        return CoursesData.map(course => {
+          const enrolledCourses = enrollments.filter(
+            enrollment => enrollment.courseId === Number(course.id)
+          ).length;
+          return {
+            ...course,
+            enrolledCourses
+          };
+        });
+      } catch (error) {
+        toast.error("Erro ao carregar as matrículas.");
+        console.error("Erro ao buscar matrículas:", error);
+        return CoursesData.map(course => ({
+          ...course,
+          enrolledCourses: 0
+        }));
+      }
+    };
+
   // Function to search for courses from the API
   const fetchCourses = async () => {
     try {
-      const response = await getCourses();
-      setCourses(response);
+      const CoursesData = await getCourses();
+      const studentsWithEnrollments = await prepareStudentsWithEnrollmentCount(CoursesData);
+      setCourses(studentsWithEnrollments);
     } catch (error) {
       toast.error("Erro ao carregar os cursos.");
       console.error("Erro ao buscar cursos:", error);
@@ -124,7 +152,7 @@ const CoursesPage = () => {
                     <TableRow key={course.id}>
                       <TableCell className="font-medium">{course.name}</TableCell>
                       <TableCell>{course.description}</TableCell>
-                      <TableCell>{course.enrolledStudents}</TableCell>
+                      <TableCell>{course.enrolledCourses || 0}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="sm" onClick={() => handleEditCourse(course)}>

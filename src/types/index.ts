@@ -11,7 +11,7 @@ export interface Course {
   id: string;
   name: string;
   description: string;
-  enrolledStudents: number;
+  enrolledCourses: number;
 }
 
 export type CreateEnrollment = {
