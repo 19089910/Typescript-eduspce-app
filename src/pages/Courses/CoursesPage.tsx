@@ -10,12 +10,14 @@ import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import CourseStudentsDialog from '@/components/courses/CourseStudentsDialog';
 import { useDeleteItem } from '@/hooks/use-deleteItem';
-import { getCourses, deleteCourse } from '@/services/courseService';
+import { useCourseContext } from '@/contexts/use-course';
+import { deleteCourse } from '@/services/courseService';
 import { useEnrollmentContext } from '@/contexts/use-enrollment';
 
 const CoursesPage = () => {
+  const { courses } = useCourseContext();
   const { enrollments } = useEnrollmentContext();
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [newCourses, setNewCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -50,9 +52,8 @@ const CoursesPage = () => {
   // Function to search for courses from the API
   const fetchCourses = async () => {
     try {
-      const CoursesData = await getCourses();
-      const studentsWithEnrollments = await prepareStudentsWithEnrollmentCount(CoursesData);
-      setCourses(studentsWithEnrollments);
+      const studentsWithEnrollments = await prepareStudentsWithEnrollmentCount(courses);
+      setNewCourses(studentsWithEnrollments);
     } catch (error) {
       toast.error("Erro ao carregar os cursos.");
       console.error("Erro ao buscar cursos:", error);
@@ -74,7 +75,7 @@ const CoursesPage = () => {
     setDeleteDialogOpen 
   } = useDeleteItem<Course>(deleteCourse, fetchCourses);
 
-  const filteredCourses = courses.filter(course => 
+  const filteredCourses = newCourses.filter(course => 
     course.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     course.description?.toLowerCase().includes(searchQuery.toLowerCase()) || 
     !searchQuery
@@ -93,11 +94,11 @@ const CoursesPage = () => {
   const handleSaveCourse = (course: Course) => {
     try {
       if (course.id) {
-        setCourses(courses.map(c => c.id === course.id ? course : c));
+        setNewCourses(newCourses.map(c => c.id === course.id ? course : c));
         toast.success(`Curso ${course.name} atualizado com sucesso!`);
       } else {
         const newCourse = { ...course, id: Date.now().toString(), enrolledStudents: 0 };
-        setCourses([...courses, newCourse]);
+        setNewCourses([...newCourses, newCourse]);
         toast.success(`Curso ${course.name} criado com sucesso!`);
       }
       setDialogOpen(false);

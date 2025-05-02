@@ -6,36 +6,31 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
-import { Student, Course, ApiEnrollment,CreateEnrollment  } from '@/types'; // <-- ajustado aqui
-import { getCourses } from '@/services/courseService';
+import { Student, CreateEnrollment } from '@/types';
 import { getAllStudents } from '@/services/studentService';
 import { createEnrollment } from '@/services/enrollmentService';
 import { Loader2 } from 'lucide-react';
+import { useCourseContext } from '@/contexts/use-course';
 
 const NewEnrollmentPage = () => {
   const navigate = useNavigate();
+  const { courses } = useCourseContext();
   const [students, setStudents] = useState<Student[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch students and courses on component mount
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchStudents = async () => {
       try {
-        const [studentsData, coursesData] = await Promise.all([
-          getAllStudents(),
-          getCourses()
-        ]);
+        const studentsData = await getAllStudents();
         setStudents(studentsData);
-        setCourses(coursesData);
       } catch (error) {
-        toast.error("Erro ao carregar dados. Por favor, tente novamente.");
-        console.error("Error fetching data:", error);
+        toast.error("Erro ao carregar alunos. Por favor, tente novamente.");
+        console.error("Error fetching students:", error);
       }
     };
-    fetchData();
+    fetchStudents();
   }, []);
 
   const handleToggleCourse = (courseId: string) => {

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Student, Course } from '@/types';
-import { getCourses } from '@/services/courseService';
+import { useCourseContext } from '@/contexts/use-course';
 import { createEnrollment } from '@/services/enrollmentService';
 import { toast } from 'sonner';
 import { useEnrollmentContext } from '@/contexts/use-enrollment';
@@ -21,15 +21,15 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
   student,
   onSave
 }) => {
+  const { courses } = useCourseContext();
   const { enrollments } = useEnrollmentContext();
-  const [courses, setCourses] = useState<Course[]>([]);
+  const [newCourse, setNewCourse] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   useEffect(() => {
     const fetchAndPrepareCourses = async () => {
       try {
-        const data = await getCourses();
-        const enrichedCourses = await prepareStudentsWithEnrollmentCount(data);
-        setCourses(enrichedCourses);
+        const enrichedCourses = await prepareStudentsWithEnrollmentCount(courses);
+        setNewCourse(enrichedCourses);
       } catch (error) {
         console.error('Erro ao buscar cursos:', error);
         toast.error("Erro ao buscar cursos.");
@@ -80,7 +80,7 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
               studentId: student.id,
               courseId: courseId,
             }).catch(error => {
-              const course = courses.find(c => c.id === courseId);
+              const course = newCourse.find(c => c.id === courseId);
               const courseName = course ? course.name : 'curso desconhecido';
   
               let errorMsg = `Não foi possível matricular em "${courseName}"`;
@@ -123,7 +123,7 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
         
         <div className="space-y-4 my-4">
           <div className="grid gap-4">
-            {courses.map(course => (
+            {newCourse.map(course => (
               <div
                 key={course.id}
                 className="glass-card flex items-center space-x-2 rounded-md p-3"

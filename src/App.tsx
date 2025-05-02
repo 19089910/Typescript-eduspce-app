@@ -13,6 +13,7 @@ import NewCoursePage from "./pages/Courses/NewCoursePage";
 import EnrollmentsPage from "./pages/Enrollments/EnrollmentsPage";
 import NewEnrollmentPage from "./pages/Enrollments/NewEnrollmentPage";
 import { EnrollmentProvider } from '@/contexts/use-enrollment';
+import { CourseProvider } from '@/contexts/use-course';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <EnrollmentProvider>
+      <CourseProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -37,6 +39,7 @@ const App = () => (
             </Routes>
           </AppLayout>
         </BrowserRouter>
+      </CourseProvider>
       </EnrollmentProvider>
     </TooltipProvider>
   </QueryClientProvider>

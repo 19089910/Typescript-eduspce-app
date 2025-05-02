@@ -13,7 +13,7 @@ import { useDeleteItem } from '@/hooks/use-deleteItem';
 import { useEnrollmentContext } from '@/contexts/use-enrollment';
 
 const EnrollmentsPage = () => {
-  const { enrollments } = useEnrollmentContext();
+  const { enrollments, refreshEnrollments } = useEnrollmentContext();
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
 
@@ -26,7 +26,8 @@ const EnrollmentsPage = () => {
     confirmDelete: confirmDeleteEnrollment, 
     setDeleteDialogOpen 
   } = useDeleteItem<ApiEnrollment>(
-    deleteEnrollment
+    deleteEnrollment,
+    refreshEnrollments
   );
 
   const filteredEnrollments = enrollments.filter(enrollment =>

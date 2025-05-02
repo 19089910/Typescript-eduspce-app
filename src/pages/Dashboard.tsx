@@ -5,28 +5,29 @@ import { Button } from '@/components/ui/button';
 import { Users, BookOpen, GraduationCap, UserPlus, FolderPlus, FileSignature } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEnrollmentContext } from '@/contexts/use-enrollment';
-import { getCourses } from '@/services/courseService';
+import { useCourseContext } from '@/contexts/use-course';
 import { getAllStudents } from '@/services/studentService';
 import { Stats }from '@/types'
 
 const Dashboard = () => {
   const { enrollments, refreshEnrollments } = useEnrollmentContext();
+  const { courses, refreshCourses  } = useCourseContext();
   const [stats, setStats] = useState<Stats>({
     students: 0,
-    courses: 0,
-    enrollments: 0
+    courses: courses.length,
+    enrollments: enrollments.length
   });
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
         await refreshEnrollments();
-        const Courses = await getCourses();
+        await refreshCourses();
         const Students = await getAllStudents();
         
         setStats({
           students: Students.length,
-          courses: Courses.length,
+          courses: courses.length,
           enrollments: enrollments.length
         });
       } catch (error) {

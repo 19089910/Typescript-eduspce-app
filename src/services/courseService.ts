@@ -14,7 +14,7 @@ export const updateCourse = async (id: string, course: Partial<Course>): Promise
 };
 
 // Get all courses
-export const getCourses = async (): Promise<Course[]> => {
+export const getAllCourses = async (): Promise<Course[]> => {
   const response = await api.get<Course[]>("/course");
   return response.data;
 };
