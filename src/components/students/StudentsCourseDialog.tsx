@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 import { Student, Course } from '@/types';
+import { getCourses } from '@/services/courseService';
+import { createEnrollment } from '@/services/enrollmentService';
+import { toast } from 'sonner';
+import { useEnrollmentContext } from '@/contexts/use-enrollment';
 
 interface AddCourseDialogProps {
   open: boolean;
@@ -18,29 +21,93 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
   student,
   onSave
 }) => {
-  // Mock data - would be fetched from API in a real app
-  const courses: Course[] = [
-    { id: '1', name: 'Matemática Avançada', description: 'Cálculo diferencial e integral, álgebra linear',  enrolledCourses: 15 },
-    { id: '2', name: 'Física Quântica', description: 'Princípios da mecânica quântica e aplicações', enrolledCourses: 8 },
-    { id: '3', name: 'Literatura Brasileira', description: 'Estudo dos principais autores e obras brasileiras', enrolledCourses: 24 },
-    { id: '4', name: 'História Mundial', description: 'Análise dos principais eventos históricos mundiais', enrolledCourses: 18 },
-    { id: '5', name: 'Programação em Python', description: 'Fundamentos da programação usando Python', enrolledCourses: 30 },
-  ];
-
+  const { enrollments } = useEnrollmentContext();
+  const [courses, setCourses] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  useEffect(() => {
+    const fetchAndPrepareCourses = async () => {
+      try {
+        const data = await getCourses();
+        const enrichedCourses = await prepareStudentsWithEnrollmentCount(data);
+        setCourses(enrichedCourses);
+      } catch (error) {
+        console.error('Erro ao buscar cursos:', error);
+        toast.error("Erro ao buscar cursos.");
+      }
+    };
+  
+    if (open) {
+      fetchAndPrepareCourses();
+    }
+  }, [open]);
 
   const handleToggleCourse = (courseId: string) => {
-    setSelectedCourses(prevSelectedCourses =>
-      prevSelectedCourses.includes(courseId)
-        ? prevSelectedCourses.filter(id => id !== courseId)
-        : [...prevSelectedCourses, courseId]
+    setSelectedCourses(prev =>
+      prev.includes(courseId)
+        ? prev.filter(id => id !== courseId)
+        : [...prev, courseId]
     );
   };
+    const prepareStudentsWithEnrollmentCount = async (
+      CoursesData: Course[]
+    ): Promise<Course[]> => {
+      try {
+        return CoursesData.map(course => {
+          const enrolledCourses = enrollments.filter(
+            enrollment => enrollment.courseId === Number(course.id)
+          ).length;
+          return {
+            ...course,
+            enrolledCourses
+          };
+        });
+      } catch (error) {
+        toast.error("Erro ao carregar as matrículas.");
+        console.error("Erro ao buscar matrículas:", error);
+        return CoursesData.map(course => ({
+          ...course,
+          enrolledCourses: 0
+        }));
+      }
+    };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (student && selectedCourses.length > 0) {
-      onSave(student.id, selectedCourses);
-      setSelectedCourses([]);
+      try {
+        const results = await Promise.allSettled(
+          selectedCourses.map(courseId =>
+            createEnrollment({
+              studentId: student.id,
+              courseId: courseId,
+            }).catch(error => {
+              const course = courses.find(c => c.id === courseId);
+              const courseName = course ? course.name : 'curso desconhecido';
+  
+              let errorMsg = `Não foi possível matricular em "${courseName}"`;
+  
+              if (error.response?.data?.message) {
+                errorMsg += `: ${error.response.data.message}`;
+              }
+
+              toast.error(
+                `Não foi possível matricular em "${courseName}"  Aluno já está matriculado em ${courseName}`
+              );
+              throw error;
+            })
+          )
+        );
+  
+        const allSucceeded = results.every(result => result.status === 'fulfilled');
+  
+        if (allSucceeded) {
+          toast.success("Matrículas realizadas com sucesso!");
+          onSave(student.id, selectedCourses);
+          setSelectedCourses([]);
+          onOpenChange(false);
+        }
+      } catch (e) {
+        console.error("Erro inesperado ao salvar matrículas:", e);
+      }
     }
   };
 
