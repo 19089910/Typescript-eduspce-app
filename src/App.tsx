@@ -12,7 +12,7 @@ import CoursesPage from "./pages/Courses/CoursesPage";
 import NewCoursePage from "./pages/Courses/NewCoursePage";
 import EnrollmentsPage from "./pages/Enrollments/EnrollmentsPage";
 import NewEnrollmentPage from "./pages/Enrollments/NewEnrollmentPage";
-import { EnrollmentProvider } from '@/contexts/EnrollmentContext';
+import { EnrollmentProvider } from '@/contexts/use-enrollment';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

@@ -12,10 +12,11 @@ import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import StudentsCourseDialog from '@/components/students/StudentsCourseDialog';
 import { getAllStudents, deleteStudent } from '@/services/studentService';
-import { getAllEnrollments } from '@/services/enrollmentService';
+import { useEnrollmentContext } from '@/contexts/use-enrollment';
 import { useDeleteItem } from '@/hooks/use-deleteItem';
 
 const StudentsPage = () => {
+  const { enrollments } = useEnrollmentContext();
   const [students, setStudents] = useState<Student[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNoEnrollment, setShowNoEnrollment] = useState(false);
@@ -29,9 +30,7 @@ const StudentsPage = () => {
   const prepareStudentsWithEnrollmentCount = async (
     studentsData: Student[]
   ): Promise<Student[]> => {
-    try {
-      const enrollments = await getAllEnrollments();
-  
+    try {  
       return studentsData.map(student => {
         const enrolledCourses = enrollments.filter(
           enrollment => enrollment.studentId === student.id
@@ -218,8 +217,8 @@ const StudentsPage = () => {
                             className={isMobile ? "hidden" : ""} 
                             variant="outline" 
                             size="sm" 
-                            onClick={() => toast.error("Funcionalidade em desenvolvimento.")}
-                            //onClick={() => handleNewEnrollment(student)}
+                            //onClick={() => toast.error("Funcionalidade em desenvolvimento.")}
+                            onClick={() => handleNewEnrollment(student)}
                           >
                             <PlusCircle className="h-4 w-4" />
                             <span className="sr-only">Matricular</span>

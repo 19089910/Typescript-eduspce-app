@@ -8,23 +8,14 @@ import { Link } from 'react-router-dom';
 import { ApiEnrollment } from '@/types';
 import { toast } from 'sonner';
 import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
-import { getAllEnrollments, deleteEnrollment } from '@/services/enrollmentService';
+import { deleteEnrollment } from '@/services/enrollmentService';
 import { useDeleteItem } from '@/hooks/use-deleteItem';
+import { useEnrollmentContext } from '@/contexts/use-enrollment';
 
 const EnrollmentsPage = () => {
-  const [enrollments, setEnrollments] = useState<ApiEnrollment[]>([]);
+  const { enrollments } = useEnrollmentContext();
   const [studentSearchQuery, setStudentSearchQuery] = useState('');
   const [courseSearchQuery, setCourseSearchQuery] = useState('');
-
-  const fetchEnrollments = async () => {
-    try {
-      const response = await getAllEnrollments();
-      setEnrollments(response);
-    } catch (error) {
-      toast.error('Erro ao carregar matrículas');
-      console.error('Error fetching enrollments:', error);
-    }
-  };
 
   // Hook to manage enrollment deletions
   const { 
@@ -35,14 +26,8 @@ const EnrollmentsPage = () => {
     confirmDelete: confirmDeleteEnrollment, 
     setDeleteDialogOpen 
   } = useDeleteItem<ApiEnrollment>(
-    deleteEnrollment, 
-    fetchEnrollments
+    deleteEnrollment
   );
-
- // Load courses when assembling the component
-  useEffect(() => {
-    fetchEnrollments();
-  }, []);
 
   const filteredEnrollments = enrollments.filter(enrollment =>
     enrollment.student?.name?.toLowerCase().includes(studentSearchQuery.toLowerCase()) &&

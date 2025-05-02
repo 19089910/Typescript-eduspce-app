@@ -11,9 +11,10 @@ import DeleteConfirmDialog from '@/components/shared/DeleteConfirmDialog';
 import CourseStudentsDialog from '@/components/courses/CourseStudentsDialog';
 import { useDeleteItem } from '@/hooks/use-deleteItem';
 import { getCourses, deleteCourse } from '@/services/courseService';
-import { getAllEnrollments } from '@/services/enrollmentService';
+import { useEnrollmentContext } from '@/contexts/use-enrollment';
 
 const CoursesPage = () => {
+  const { enrollments } = useEnrollmentContext();
   const [courses, setCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -27,8 +28,6 @@ const CoursesPage = () => {
       CoursesData: Course[]
     ): Promise<Course[]> => {
       try {
-        const enrollments = await getAllEnrollments();
-    
         return CoursesData.map(course => {
           const enrolledCourses = enrollments.filter(
             enrollment => enrollment.courseId === Number(course.id)

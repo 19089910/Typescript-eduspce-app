@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Users, BookOpen, GraduationCap, UserPlus, FolderPlus, FileSignature } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getAllEnrollments } from '@/services/enrollmentService';
+import { useEnrollmentContext } from '@/contexts/use-enrollment';
 import { getCourses } from '@/services/courseService';
 import { getAllStudents } from '@/services/studentService';
 import { Stats }from '@/types'
 
 const Dashboard = () => {
+  const { enrollments, refreshEnrollments } = useEnrollmentContext();
   const [stats, setStats] = useState<Stats>({
     students: 0,
     courses: 0,
@@ -19,7 +20,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const enrollments = await getAllEnrollments();
+        await refreshEnrollments();
         const Courses = await getCourses();
         const Students = await getAllStudents();
         
