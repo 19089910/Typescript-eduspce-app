@@ -1,106 +1,117 @@
-# 🎓 EduSpace – Sistema de Acompanhamento de Matrículas
+🎓 EduSpace – Sistema de Acompanhamento de Matrículas
+EduSpace é uma aplicação full stack desenvolvida como parte de uma avaliação técnica, com operações CRUD completas para gerenciar Cursos, Alunos e Matrículas.
 
-**EduSpace** é uma aplicação full stack com **CRUD completo** para gerenciamento de **Cursos, Alunos e Matrículas**, desenvolvida como parte de uma avaliação técnica.
+📌 Funcionalidades
+✅ Gestão de Cursos (criar, listar, editar, excluir)
 
----
+✅ Gestão de Alunos (nome, e-mail, data de nascimento — com validação de maioridade)
 
-## 📌 Funcionalidades
+✅ Gestão de Matrículas (matricular e desmatricular alunos em cursos)
 
-- ✅ CRUD de **Cursos** (criar, listar, editar, excluir)
-- ✅ CRUD de **Alunos** (nome, e-mail, data de nascimento — com validação para maioridade)
-- ✅ CRUD de **Matrículas** (matricular e desmatricular alunos em cursos)
-- ✅ Listagens com filtros:
-  - Alunos por curso
-  - Todos os alunos matriculados
-  - Todos os cursos disponíveis
+✅ Listagens e Filtros:
 
----
+Alunos por curso
 
-## 🛠 Tecnologias Utilizadas
+Todos os alunos matriculados
 
-### Backend
-- .NET 9
-- Entity Framework Core (com Migrations)
-- SQL Server
+Todos os cursos disponíveis
 
-### Frontend
-- React
-- TypeScript ✅
+🛠 Tecnologias Utilizadas
+Backend
+.NET 9
 
----
+Entity Framework Core (com Migrations)
 
-## 📁 Estrutura do Projeto
+SQL Server
 
+Frontend
+React
+
+TypeScript ✅
+
+📁 Estrutura do Projeto
+bash
+Copy
+Edit
 /eduspace
-├── backend/ # API em .NET 9 com EF Core e SQL Server
-├── frontend/ # Aplicação React com TypeScript
-└── README.md
-
+├── backend/           # API em .NET 9 com EF Core e SQL Server
+├── frontend/          # Aplicação React com TypeScript
+└── README.md          # Documentação do projeto
 💻 Frontend (React + TypeScript)
-Acesse a pasta do frontend:
-
+1. Navegue até o diretório do frontend:
 bash
 Copy
 Edit
 cd frontend
-Instale as dependências:
-
+2. Instale as dependências:
 bash
 Copy
 Edit
 npm install
-Inicie o servidor de desenvolvimento:
-
+3. Inicie o servidor de desenvolvimento:
 bash
 Copy
 Edit
 npm run dev
-A aplicação será executada em http://localhost:3000
+A aplicação será executada em: http://localhost:3000
 
 🗂 Endpoints Principais (API)
-Entidade	Verbo HTTP	Rota	Ação
-Cursos	GET	/api/cursos	Listar cursos
-POST	/api/cursos	Criar curso
-PUT	/api/cursos/{id}	Atualizar curso
-DELETE	/api/cursos/{id}	Excluir curso
-Alunos	GET	/api/alunos	Listar alunos
-POST	/api/alunos	Criar aluno
-PUT	/api/alunos/{id}	Atualizar aluno
-DELETE	/api/alunos/{id}	Excluir aluno
-Matrículas	POST	/api/matriculas	Matricular aluno em curso
-DELETE	/api/matriculas	Remover aluno de curso
-Filtros	GET	/api/cursos/{id}/alunos	Alunos de um curso
-GET	/api/alunos/matriculados	Alunos com matrícula ativa
+Cursos
+GET /api/courses: Lista todos os cursos disponíveis.
 
-🌐 GitHub
-Repositório do projeto:
-https://github.com/seu-usuario/eduspace
+POST /api/courses: Cria um novo curso.
 
-✅ Entrega
-✔ Projeto com backend em .NET 9
-✔ Frontend em React com TypeScript
-✔ Entity Framework com Migrations
-✔ Componente em React
-✔ Instruções para rodar o projeto localmente
-✔ Repositório público no GitHub
+PUT /api/courses/{id}: Atualiza um curso existente.
+
+DELETE /api/courses/{id}: Exclui um curso.
+
+Alunos
+GET /api/students: Lista todos os alunos.
+
+POST /api/students: Cria um novo aluno.
+
+PUT /api/students/{id}: Atualiza um aluno.
+
+DELETE /api/students/{id}: Exclui um aluno.
+
+Matrículas
+POST /api/enrollments: Matricula um aluno em um curso.
+
+DELETE /api/enrollments: Desmatricula um aluno de um curso.
+
+GET /api/courses/{id}/students: Lista os alunos matriculados em um curso.
+
+GET /api/students/enrolled: Lista todos os alunos com matrícula ativa.
+
+🌐 Repositório no GitHub
+O código-fonte deste projeto pode ser encontrado no GitHub:
+
+Repositório no GitHub
+
+✅ Entregáveis
+Backend desenvolvido em .NET 9
+
+Frontend desenvolvido em React com TypeScript
+
+Entity Framework com Migrations
+
+Pelo menos um componente implementado em React
+
+Instruções para rodar o projeto localmente
+
+Repositório público no GitHub
 
 🧪 Diferenciais
-✅ Utilização de TypeScript no front-end
+Utilização de TypeScript no frontend
 
-⏳ Deploy em nuvem (em andamento...)
+Deploy na nuvem (em breve…)
 
-🔗 Link do projeto publicado (em breve)
-Aguardando URL de publicação...
+🔗 Link do Projeto Publicado (em breve…)
+A versão publicada do projeto estará disponível em:
 
-arduino
-Copy
-Edit
+EduSpace - Versão ao Vivo
 
-Se quiser, posso gerar esse arquivo para download ou criar um repositório base para você com essa estrutura. Deseja que eu prepare isso?
+📝 Notas
+Este projeto tem como objetivo gerenciar o sistema de matrículas para cursos e alunos, incluindo funcionalidades como adicionar, atualizar e excluir cursos, alunos e matrículas.
 
-
-
-
-
-
-
+O projeto inclui validações, como a verificação de idade dos alunos para garantir que estejam acima da idade mínima exigida.
