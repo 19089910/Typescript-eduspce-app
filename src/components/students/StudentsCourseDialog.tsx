@@ -22,7 +22,7 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
   onSave
 }) => {
   const { courses } = useCourseContext();
-  const { enrollments } = useEnrollmentContext();
+  const { enrollments, refreshEnrollments } = useEnrollmentContext();
   const [newCourse, setNewCourse] = useState<Course[]>([]);
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   useEffect(() => {
@@ -79,6 +79,9 @@ const AddCourseDialog: React.FC<AddCourseDialogProps> = ({
             createEnrollment({
               studentId: student.id,
               courseId: courseId,
+            }).then(result => {
+              refreshEnrollments();
+              return result;
             }).catch(error => {
               const course = newCourse.find(c => c.id === courseId);
               const courseName = course ? course.name : 'curso desconhecido';

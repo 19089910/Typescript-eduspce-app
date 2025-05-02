@@ -20,7 +20,7 @@ const CourseDialog: React.FC<CourseDialogProps> = ({
     const newCourse = {
       ...values,
       id: course?.id || '',
-      enrolledStudents: course?.enrolledStudents || 0//futuramente ao criar curso ja pode colocar o usuario
+      enrolledStudents: course?.enrolledCourses || 0//futuramente ao criar curso ja pode colocar o usuario
     };
     onSave(newCourse);
     onOpenChange(false);

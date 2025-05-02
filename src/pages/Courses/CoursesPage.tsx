@@ -15,7 +15,7 @@ import { deleteCourse } from '@/services/courseService';
 import { useEnrollmentContext } from '@/contexts/use-enrollment';
 
 const CoursesPage = () => {
-  const { courses } = useCourseContext();
+  const { courses, refreshCourses } = useCourseContext();
   const { enrollments } = useEnrollmentContext();
   const [newCourses, setNewCourses] = useState<Course[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,6 +63,7 @@ const CoursesPage = () => {
   // Load courses when assembling the component
   useEffect(() => {
     fetchCourses();
+    refreshCourses();
   }, []);
   
   // Hook to manage course deletions
