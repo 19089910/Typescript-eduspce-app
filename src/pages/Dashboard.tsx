@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Users, BookOpen, GraduationCap, UserPlus, FolderPlus, FileSignature } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getAllEnrollments } from '@/services/enrollmentService';
+import { getCourses } from '@/services/courseService';
+import { getAllStudents } from '@/services/studentService';
 import { Stats }from '@/types'
 
 const Dashboard = () => {
@@ -18,14 +20,12 @@ const Dashboard = () => {
     const fetchStats = async () => {
       try {
         const enrollments = await getAllEnrollments();
-        
-        // Calcular estatísticas
-        const uniqueStudents = new Set(enrollments.map(e => e.studentId));
-        const uniqueCourses = new Set(enrollments.map(e => e.courseId));
+        const Courses = await getCourses();
+        const Students = await getAllStudents();
         
         setStats({
-          students: uniqueStudents.size,
-          courses: uniqueCourses.size,
+          students: Students.length,
+          courses: Courses.length,
           enrollments: enrollments.length
         });
       } catch (error) {

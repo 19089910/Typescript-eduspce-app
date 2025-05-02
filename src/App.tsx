@@ -12,6 +12,7 @@ import CoursesPage from "./pages/Courses/CoursesPage";
 import NewCoursePage from "./pages/Courses/NewCoursePage";
 import EnrollmentsPage from "./pages/Enrollments/EnrollmentsPage";
 import NewEnrollmentPage from "./pages/Enrollments/NewEnrollmentPage";
+import { EnrollmentProvider } from '@/contexts/EnrollmentContext';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -19,22 +20,24 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/students" element={<StudentsPage />} />
-            <Route path="/students/new" element={<NewStudentPage />} />
-            <Route path="/courses" element={<CoursesPage />} />
-            <Route path="/courses/new" element={<NewCoursePage />} />
-            <Route path="/enrollments" element={<EnrollmentsPage />} />
-            <Route path="/enrollments/new" element={<NewEnrollmentPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AppLayout>
-      </BrowserRouter>
+      <EnrollmentProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/students" element={<StudentsPage />} />
+              <Route path="/students/new" element={<NewStudentPage />} />
+              <Route path="/courses" element={<CoursesPage />} />
+              <Route path="/courses/new" element={<NewCoursePage />} />
+              <Route path="/enrollments" element={<EnrollmentsPage />} />
+              <Route path="/enrollments/new" element={<NewEnrollmentPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </AppLayout>
+        </BrowserRouter>
+      </EnrollmentProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
